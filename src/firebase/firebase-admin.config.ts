@@ -1,20 +1,11 @@
 import * as admin from 'firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
+import * as serviceAccount from './service-account.json';
 
-const parseServiceAccount = () => {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    const decodedServiceAccount = Buffer.from(
-      process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
-      'base64',
-    ).toString('utf-8');
-    return JSON.parse(decodedServiceAccount);
-  } else {
-    return require('./service-account.json');
-  }
-};
+const serviceAccountObject = JSON.parse(JSON.stringify(serviceAccount));
 
 admin.initializeApp({
-  credential: admin.credential.cert(parseServiceAccount()),
+  credential: admin.credential.cert(serviceAccountObject),
 });
 
 const db = getFirestore();
