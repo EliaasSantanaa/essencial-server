@@ -6,12 +6,15 @@ import {
 } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { FirebaseConfigService } from 'src/firebase/firebase.config';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
 import { SignUpDto } from './dto/sign-up.dto';
-import { sign } from 'crypto';
 import { UserRecord } from 'firebase-admin/auth';
 import { firebaseAdmin, firestoreDb } from 'src/firebase/firebase-admin.config';
-import { create } from 'domain';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +49,8 @@ export class AuthService {
   async signUp(
     signUpDto: SignUpDto,
   ): Promise<{ uid: string; email: string; name: string }> {
-    const { name, email, password } = signUpDto;
+    const { name, email, password, authorized, role, weight, height } =
+      signUpDto;
 
     let newUserRecord: UserRecord;
 
@@ -57,6 +61,7 @@ export class AuthService {
         displayName: name,
       });
     } catch (error) {
+      console.error('Erro ao criar usuário no Firebase Auth:', error);
       if (error.code === 'auth/email-already-exists') {
         throw new ConflictException('Este e-mail já está em uso.');
       }
@@ -66,11 +71,16 @@ export class AuthService {
     }
 
     try {
-      await firestoreDb.collection('users')
+      const newUser = await firestoreDb
+        .collection('users')
         .doc(newUserRecord.uid)
         .set({
           name,
           email,
+          authorized,
+          role,
+          weight,
+          height,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -84,6 +94,17 @@ export class AuthService {
       throw new InternalServerErrorException(
         'Ocorreu um erro ao salvar os dados do usuário.',
       );
+    }
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+    const { email } = forgotPasswordDto;
+    const auth = getAuth(this.firebaseConfigService.firebaseApp);
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('Erro ao solicitar redefinição de senha:', error);
     }
   }
 }
