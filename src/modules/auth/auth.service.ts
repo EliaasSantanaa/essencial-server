@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
-import { FirebaseConfigService } from 'src/firebase/firebase.config';
+import { FirebaseConfigService } from '../../firebase/firebase.config';
 import {
   getAuth,
   sendPasswordResetEmail,
@@ -13,7 +13,7 @@ import {
 } from 'firebase/auth';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserRecord } from 'firebase-admin/auth';
-import { firebaseAdmin, firestoreDb } from 'src/firebase/firebase-admin.config';
+import { firebaseAdmin, firestoreDb } from '../../firebase/firebase-admin.config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()

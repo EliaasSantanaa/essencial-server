@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { PatientModule } from 'src/modules/patient/patient.module';
-import { DoctorModule } from 'src/modules/doctor/doctor.module';
-import { AuthModule } from 'src/modules/auth/auth.module';
-import { FirebaseModule } from 'src/firebase/firebase.module';
+import { PatientModule } from '../modules/patient/patient.module';
+import { DoctorModule } from '../modules/doctor/doctor.module';
+import { AuthModule } from '../modules/auth/auth.module';
+import { FirebaseModule } from '../firebase/firebase.module';
 
 @Module({
   imports: [

@@ -1,23 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { Server } from 'http';
-
-let server: Server;
+import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(3001); 
-}
+  const configService = app.get(ConfigService);
 
-if (require.main === module) {
-  bootstrap();
-}
+  app.enableCors();
+  app.useGlobalPipes(new ValidationPipe());
 
-export default async function handler(req: any, res: any) {
-  if (!server) {
-    const app = await NestFactory.create(AppModule);
-    await app.init();
-    server = app.getHttpAdapter().getInstance();
-  }
-  server.emit('request', req, res); // Executa como função serverless
+  const port = configService.get('PORT') ?? 3002;
+  await app.listen(port);
+  console.log(`localhost:${port}`);
 }
+bootstrap();
