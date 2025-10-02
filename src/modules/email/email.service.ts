@@ -29,6 +29,7 @@ export class EmailService {
       console.log(`E-mail de verificação enviado para ${to}`);
     } catch (error) {
       console.error('Erro ao enviar e-mail pelo SendGrid', error);
+      
       if (error.response) {
         console.error(error.response.body);
       }

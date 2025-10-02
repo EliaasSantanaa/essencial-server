@@ -97,6 +97,7 @@ export class AuthService {
     }
 
     try {
+       console.log('[PROD-DEBUG] Passo 1: Tentando salvar usuário no Firestore...');
       await firestoreDb.collection('users').doc(newUserRecord.uid).set({
         name,
         email,
@@ -109,16 +110,21 @@ export class AuthService {
         createdAt: new Date().toISOString(),
       });
 
+      console.log('[PROD-DEBUG] Passo 2: Usuário salvo no Firestore com sucesso.');
       const actionCodeSettings = {
         url: this.emailVerificationUrl,
         handleCodeInApp: true,
       };
 
+      console.log('[PROD-DEBUG] Passo 3: Gerando link de verificação...');
       const actionLink = await firebaseAdmin
         .auth()
         .generateEmailVerificationLink(email, actionCodeSettings);
+        console.log('[PROD-DEBUG] Passo 4: Link gerado com sucesso. Tentando enviar e-mail...');
+
 
       await this.emailService.sendCustomVerificationEmail(email, actionLink);
+      console.log('[PROD-DEBUG] Passo 5: E-mail enviado com sucesso! Fim do TRY.');
 
       return {
         uid: newUserRecord.uid,
@@ -126,6 +132,7 @@ export class AuthService {
         name: newUserRecord.displayName || '',
       };
     } catch (error) {
+      console.error('[PROD-DEBUG] ERRO CAPTURADO NO BLOCO CATCH!', error);
       await firebaseAdmin.auth().deleteUser(newUserRecord.uid);
       throw new InternalServerErrorException(
         'Ocorreu um erro ao salvar os dados do usuário.',
