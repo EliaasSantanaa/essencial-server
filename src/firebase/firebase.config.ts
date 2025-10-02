@@ -17,6 +17,5 @@ export class FirebaseConfigService {
     };
 
     this.firebaseApp = initializeApp(firebaseConfig);
-    console.log('Firebase inicializado com sucesso!');
   }
 }

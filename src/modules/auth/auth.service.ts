@@ -13,12 +13,31 @@ import {
 } from 'firebase/auth';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserRecord } from 'firebase-admin/auth';
-import { firebaseAdmin, firestoreDb } from '../../firebase/firebase-admin.config';
+import {
+  firebaseAdmin,
+  firestoreDb,
+} from '../../firebase/firebase-admin.config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { EmailService } from '../email/email.service';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly firebaseConfigService: FirebaseConfigService) {}
+  private readonly firebaseApiKey: string;
+  private readonly emailVerificationUrl: string;
+
+  constructor(
+    private readonly firebaseConfigService: FirebaseConfigService,
+    private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
+  ) {
+    this.firebaseApiKey =
+      this.configService.get<string>('FIREBASE_API_KEY') || '';
+    this.emailVerificationUrl =
+      this.configService.get<string>('EMAIL_VERIFICATION_URL') || '';
+
+  }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
@@ -42,6 +61,12 @@ export class AuthService {
         throw new UnauthorizedException('Credenciais inválidas.');
       }
 
+      if (error.code === 'auth/user-disabled') {
+        throw new UnauthorizedException(
+          'Sua conta está desativada. Por favor, verifique seu e-mail para ativá-la.',
+        );
+      }
+
       throw new UnauthorizedException('Ocorreu um erro ao tentar fazer login.');
     }
   }
@@ -59,6 +84,7 @@ export class AuthService {
         email,
         password,
         displayName: name,
+        disabled: false,
       });
     } catch (error) {
       console.error('Erro ao criar usuário no Firebase Auth:', error);
@@ -71,19 +97,29 @@ export class AuthService {
     }
 
     try {
-      const newUser = await firestoreDb
-        .collection('users')
-        .doc(newUserRecord.uid)
-        .set({
-          name,
-          email,
-          authorized,
-          role,
-          weight,
-          height,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+      await firestoreDb.collection('users').doc(newUserRecord.uid).set({
+        name,
+        email,
+        authorized,
+        role,
+        weight,
+        height,
+        email_verified: false,
+        status: 'pending_verification',
+        createdAt: new Date().toISOString(),
+      });
+
+      const actionCodeSettings = {
+        url: this.emailVerificationUrl,
+        handleCodeInApp: true,
+      };
+
+      const actionLink = await firebaseAdmin
+        .auth()
+        .generateEmailVerificationLink(email, actionCodeSettings);
+
+      await this.emailService.sendCustomVerificationEmail(email, actionLink);
+
       return {
         uid: newUserRecord.uid,
         email: newUserRecord.email || '',
@@ -96,6 +132,36 @@ export class AuthService {
       );
     }
   }
+
+async verifyEmailAndActivateUser(actionCode: string): Promise<{ message: string }> {
+  const firebaseRestUrl = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${this.firebaseApiKey}`;
+
+  try {
+    const response = await axios.post(firebaseRestUrl, {
+      oobCode: actionCode,
+    });
+
+    const uid = response.data.localId;
+    if (!uid) {
+      throw new Error('UID do usuário não retornado pela API do Firebase.');
+    }
+
+    await firestoreDb.collection('users').doc(uid).update({
+      email_verified: true,
+      status: 'active',
+      updatedAt: new Date().toISOString(),
+    });
+
+    return { message: 'E-mail verificado com sucesso.' };
+  } catch (error) {
+    console.error('Falha ao verificar e-mail:', error.response?.data || error.message);
+    const firebaseError = error.response?.data?.error?.message;
+    if (firebaseError === 'INVALID_OOB_CODE' || firebaseError === 'EXPIRED_OOB_CODE') {
+      throw new InternalServerErrorException('Link de verificação inválido ou expirado.');
+    }
+    throw new InternalServerErrorException('Ocorreu um erro ao verificar o e-mail.');
+  }
+}
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
     const { email } = forgotPasswordDto;

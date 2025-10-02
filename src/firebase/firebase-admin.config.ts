@@ -1,5 +1,7 @@
 import * as admin from 'firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const parseServiceAccount = () => {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
