@@ -6,6 +6,7 @@ import { PatientModule } from '../modules/patient/patient.module';
 import { DoctorModule } from '../modules/doctor/doctor.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { FirebaseModule } from '../firebase/firebase.module';
+import { EmailModule } from '../modules/email/email.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { FirebaseModule } from '../firebase/firebase.module';
     DoctorModule,
     AuthModule,
     FirebaseModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
