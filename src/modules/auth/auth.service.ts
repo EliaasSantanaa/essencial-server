@@ -7,10 +7,17 @@ import {
 } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 import { FirebaseConfigService } from '../../firebase/firebase.config';
-import { getAuth, sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserRecord } from 'firebase-admin/auth';
-import { firebaseAdmin, firestoreDb } from '../../firebase/firebase-admin.config';
+import {
+  firebaseAdmin,
+  firestoreDb,
+} from '../../firebase/firebase-admin.config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
@@ -26,22 +33,27 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
   ) {
-    this.firebaseApiKey = this.configService.get<string>('FIREBASE_WEB_API_KEY') || '';
-    this.emailVerificationUrl = this.configService.get<string>('EMAIL_VERIFICATION_URL') || '';
+    this.firebaseApiKey =
+      this.configService.get<string>('FIREBASE_API_KEY') || '';
+    this.emailVerificationUrl =
+      this.configService.get<string>('EMAIL_VERIFICATION_URL') || '';
+
   }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
       const auth = getAuth(this.firebaseConfigService.firebaseApp);
+
       const userCredential = await signInWithEmailAndPassword(
         auth,
         signInDto.email,
         signInDto.password,
       );
+
       const token = await userCredential.user.getIdToken();
+
       return { accessToken: token };
     } catch (error) {
-      // Mapeia erros específicos do Firebase para exceções HTTP claras
       switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
@@ -53,11 +65,15 @@ export class AuthService {
           console.error('Erro inesperado no signIn:', error);
           throw new InternalServerErrorException('Ocorreu um erro ao tentar fazer login.');
       }
-    }
   }
+}
 
-  async signUp(signUpDto: SignUpDto): Promise<{ message: string }> {
-    const { name, email, password, authorized, role, weight, height } = signUpDto;
+  async signUp(
+    signUpDto: SignUpDto,
+  ): Promise<{ message: string }> {
+    const { name, email, password, authorized, role, weight, height } =
+      signUpDto;
+
     let newUserRecord: UserRecord;
 
     try {
@@ -68,8 +84,7 @@ export class AuthService {
         disabled: false,
       });
     } catch (error) {
-      // Mapeia erros específicos da criação de usuário
-      switch (error.code) {
+       switch (error.code) {
         case 'auth/email-already-exists':
           throw new ConflictException('Este e-mail já está em uso.');
         case 'auth/invalid-password':
@@ -98,12 +113,16 @@ export class AuthService {
         handleCodeInApp: true,
       };
 
-      const actionLink = await firebaseAdmin.auth().generateEmailVerificationLink(email, actionCodeSettings);
+      const actionLink = await firebaseAdmin
+        .auth()
+        .generateEmailVerificationLink(email, actionCodeSettings);
+
       await this.emailService.sendCustomVerificationEmail(email, actionLink);
 
-      return { message: 'Cadastro realizado com sucesso. Verifique seu e-mail para ativar a conta.' };
+      return {
+        message: 'Usuário criado com sucesso. Verifique seu e-mail para ativar a conta.',
+      };
     } catch (error) {
-      // Se algo falhar após a criação no Auth, deletamos o usuário para evitar inconsistência.
       if (newUserRecord) {
         await firebaseAdmin.auth().deleteUser(newUserRecord.uid);
       }
@@ -112,42 +131,43 @@ export class AuthService {
     }
   }
 
-  async verifyEmailAndActivateUser(actionCode: string): Promise<{ message: string }> {
-    const firebaseRestUrl = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${this.firebaseApiKey}`;
-    try {
-      const response = await axios.post(firebaseRestUrl, {
-        oobCode: actionCode,
-      });
+async verifyEmailAndActivateUser(actionCode: string): Promise<{ message: string }> {
+  const firebaseRestUrl = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${this.firebaseApiKey}`;
 
-      const uid = response.data.localId;
-      if (!uid) {
-        throw new Error('UID do usuário não retornado pela API do Firebase.');
-      }
+  try {
+    const response = await axios.post(firebaseRestUrl, {
+      oobCode: actionCode,
+    });
 
-      await firestoreDb.collection('users').doc(uid).update({
-        email_verified: true,
-        status: 'active',
-        updatedAt: new Date().toISOString(),
-      });
+    const uid = response.data.localId;
+    if (!uid) {
+      throw new Error('UID do usuário não retornado pela API do Firebase.');
+    }
 
-      return { message: 'E-mail verificado com sucesso.' };
-    } catch (error) {
-      const firebaseError = error.response?.data?.error?.message;
+    await firestoreDb.collection('users').doc(uid).update({
+      email_verified: true,
+      status: 'active',
+      updatedAt: new Date().toISOString(),
+    });
+
+    return { message: 'E-mail verificado com sucesso.' };
+  } catch (error) {
+    const firebaseError = error.response?.data?.error?.message;
       if (firebaseError === 'INVALID_OOB_CODE' || firebaseError === 'EXPIRED_OOB_CODE') {
         throw new BadRequestException('Link de verificação inválido ou expirado.');
       }
       console.error('Falha ao verificar e-mail:', error.response?.data || error.message);
       throw new InternalServerErrorException('Ocorreu um erro ao verificar o e-mail.');
     }
-  }
+}
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
     const { email } = forgotPasswordDto;
+    const auth = getAuth(this.firebaseConfigService.firebaseApp);
+
     try {
-      const auth = getAuth(this.firebaseConfigService.firebaseApp);
       await sendPasswordResetEmail(auth, email);
     } catch (error) {
-      // Não lançamos erro para o cliente para evitar enumeração de e-mails
       console.error('Erro ao solicitar redefinição de senha:', error);
     }
   }
