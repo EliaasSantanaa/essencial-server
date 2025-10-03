@@ -58,7 +58,7 @@ export class AuthController {
 
     try {
       await this.authService.verifyEmailAndActivateUser(oobCode);
-      return res.redirect('https://essencial-dev.vercel.app/signin');
+      return res.redirect('https://essencial-dev.vercel.app/sign-in');
     } catch (error) {
       return res.redirect('https://essencial-dev.vercel.app/falha-ativacao');
     }
