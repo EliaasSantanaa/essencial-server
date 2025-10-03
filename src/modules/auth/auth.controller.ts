@@ -46,6 +46,7 @@ export class AuthController {
     };
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get('verify-email')
   async verifyEmail(@Query('oobCode') oobCode: string, @Res() res: Response) {
     if (!oobCode) {
