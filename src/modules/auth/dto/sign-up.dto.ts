@@ -18,10 +18,6 @@ export class SignUpDto extends SignInDto {
   @IsNotEmpty({ message: 'weight é obrigatório' })
   weight: number;
 
-  @IsString({ message: 'role deve ser uma string' })
-  @IsNotEmpty({ message: 'role é obrigatório  ' })
-  role: string;
-
   @IsBoolean({ message: 'authorized deve ser um booleano' })
   @IsNotEmpty({ message: 'authorized é obrigatório' })
   authorized: boolean;
