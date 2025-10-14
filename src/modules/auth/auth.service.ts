@@ -71,7 +71,7 @@ export class AuthService {
   async signUp(
     signUpDto: SignUpDto,
   ): Promise<{ message: string }> {
-    const { name, email, password, authorized, role, weight, height } =
+    const { name, email, password, authorized, weight, height, birthday } =
       signUpDto;
 
     let newUserRecord: UserRecord;
@@ -100,11 +100,12 @@ export class AuthService {
         name,
         email,
         authorized,
-        role,
         weight,
         height,
+        birthday,
         email_verified: false,
         status: 'pending_verification',
+        role: 'patient',
         createdAt: new Date().toISOString(),
       });
 
