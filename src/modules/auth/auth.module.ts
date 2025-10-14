@@ -11,6 +11,7 @@ import { FirebaseAuthGuard } from './guards/firebase-auth.guard';
     AuthService,
     FirebaseAuthGuard,
   ],
-  controllers: [AuthController]
+  controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule {}
