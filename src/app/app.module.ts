@@ -7,7 +7,6 @@ import { DoctorModule } from '../modules/doctor/doctor.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { FirebaseModule } from '../firebase/firebase.module';
 import { EmailModule } from '../modules/email/email.module';
-import { AiAgentModule } from 'src/modules/ai-agent/ai-agent.module';
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { AiAgentModule } from 'src/modules/ai-agent/ai-agent.module';
     AuthModule,
     FirebaseModule,
     EmailModule,
-    AiAgentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
