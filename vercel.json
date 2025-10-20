@@ -17,5 +17,11 @@
       "source": "/(.*)",
       "destination": "/src/main.ts"
     }
-  ]
+  ],
+      "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "*": false
+    }
+  }
 }
