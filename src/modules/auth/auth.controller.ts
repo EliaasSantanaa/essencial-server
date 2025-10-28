@@ -1,111 +1,145 @@
 import {
-  Body,
   Controller,
-  Get,
+  Post,
+  Body,
+  Res,
   HttpCode,
   HttpStatus,
-  Post,
-  Query,
-  Res,
-  UseGuards,
-  ValidationPipe,
+  Req,
+  UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInDto } from './dto/sign-in.dto';
-import { SignUpDto } from './dto/sign-up.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import type { Response } from 'express';
-import { FirebaseAuthGuard } from './guards/firebase-auth.guard';
+import type { Response, Request } from 'express';
+
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-  ApiQuery,
- } from '@nestjs/swagger';
+  AdminCreateUserDto,
+  ConfirmForgotPasswordDto,
+  ForgotPasswordDto,
+  LoginDto,
+} from './dto/auth.dto';
 
-@ApiTags('Auth')
- @Controller('auth')
+@Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
-  @HttpCode(HttpStatus.OK)
   @Post('sign-in')
-  @ApiOperation({summary: 'Login de usuário'})
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Login bem-sucedido.',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Credenciais inválidas.',
-  })
-  async signIn(@Body(new ValidationPipe()) signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
-  }
-
-  @Post('sign-up')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({summary: 'Registro de novo usuário'})
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Usuário criado com sucesso.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Dados inválidos (ex: e-mail já existe, validação falhou).',
-  })
-  async signUp(@Body(new ValidationPipe()) signUpDto: SignUpDto) {
-    return this.authService.signUp(signUpDto);
-  }
-
   @HttpCode(HttpStatus.OK)
-  @Post('forgot-password')
-  @ApiOperation({summary: 'Redefinição de senha'})
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Notificação de e-mail de redefinição de senha enviada (se o e-mail existir).',
-  })
-  async forgotPassword(
-    @Body(new ValidationPipe()) forgotPasswordDto: ForgotPasswordDto,
+  async signIn(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
   ) {
-    await this.authService.forgotPassword(forgotPasswordDto);
+    try {
+      const authUser = await this.authService.signIn(
+        loginDto.email,
+        loginDto.password,
+      );
 
-    return {
-      message:
-        'Se um usuário com este e-mail estiver registrado, um link para redefinição de senha será enviado.',
-    };
+      response.cookie('auth-refresh-token', authUser.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+        path: '/',
+      });
+
+      return {
+        user: {
+          email: authUser.email,
+          sub: authUser.sub,
+          role: authUser.role,
+          name: authUser.name,
+          accessToken: authUser.accessToken,
+          expiresAt: authUser.expiresAt,
+        },
+      };
+    } catch (error: any) {
+      if (
+        error.code === 'NotAuthorizedException' ||
+        error.code === 'UserNotConfirmedException'
+      ) {
+        throw new UnauthorizedException(error.message);
+      }
+      throw new BadRequestException(error.message);
+    }
   }
 
+  @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @Get('verify-email')
-  @ApiOperation({summary: 'Verificação de e-mail do usuário'})
-  @ApiQuery({
-    name: 'oobCode',
-    required: true,
-    description: 'Código de verificação enviado por e-mail ao usuário.',
-  })
-  @ApiResponse({
-    status: HttpStatus.FOUND,
-    description: 'Redireciona para a página de login após verificação bem-sucedida.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Código de verificação ausente ou inválido. Redireciona para falha.',
-  })
-  async verifyEmail(@Query('oobCode') oobCode: string, @Res() res: Response) {
-    if (!oobCode) {
-      // Este código agora funciona
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .send('Código de verificação ausente.');
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('auth-refresh-token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+    return { message: 'Logout successful' };
+  }
+
+  @Post('session')
+  @HttpCode(HttpStatus.OK)
+  async getSession(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies['auth-refresh-token'];
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token available');
     }
 
     try {
-      await this.authService.verifyEmailAndActivateUser(oobCode);
-      return res.redirect('https://essencial-dev.vercel.app/sign-in');
+      const authUser = await this.authService.getNewAccessToken(refreshToken);
+
+      response.cookie('auth-refresh-token', authUser.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+        path: '/',
+      });
+
+      return {
+        user: {
+          email: authUser.email,
+          sub: authUser.sub,
+          role: authUser.role,
+          name: authUser.name,
+          accessToken: authUser.accessToken,
+          expiresAt: authUser.expiresAt,
+        },
+      };
     } catch (error) {
-      return res.redirect('https://essencial-dev.vercel.app/falha-ativacao');
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(forgotPasswordDto.email);
+    return { message: 'Verification code sent' };
+  }
+
+  @Post('confirm-forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async confirmForgotPassword(
+    @Body() confirmForgotPasswordDto: ConfirmForgotPasswordDto,
+  ) {
+    await this.authService.confirmForgotPassword(
+      confirmForgotPasswordDto.email,
+      confirmForgotPasswordDto.confirmationCode,
+      confirmForgotPasswordDto.newPassword,
+    );
+    return { message: 'Password reset successful' };
+  }
+
+  @Post('sign-up')
+  async adminCreateUser(@Body() data: AdminCreateUserDto) {
+    const user = await this.authService.adminCreateUser(data);
+    return {
+      message: 'Usuário criado com sucesso',
+      status: HttpStatus.CREATED,
+      user,
+    };
   }
 }
