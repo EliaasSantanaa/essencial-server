@@ -14,7 +14,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
@@ -22,5 +22,6 @@ async function bootstrap() {
   const port = configService.get('PORT') ?? 3002;
   await app.listen(port);
   console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Swagger docs is running at http://localhost:${port}/api/docs`);
 }
 bootstrap();
