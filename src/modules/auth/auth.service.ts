@@ -20,7 +20,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AuthError, AuthUser } from 'src/models/auth.model';
 import { AdminCreateUserDto } from './dto/auth.dto';
-import { firestoreDb } from 'src/firebase/firebase-admin.config';
+import { firestoreDb } from '../../firebase/firebase-admin.config';
 // import { generateRandomPassword } from 'src/utils/password.utils';
 
 function decodeJWT(token: string): { exp?: number; sub?: string } {
