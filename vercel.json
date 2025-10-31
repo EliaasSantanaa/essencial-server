@@ -7,8 +7,8 @@
     }
   },
   "functions": {
-    "dist/main.js": {
-      "includeFiles": "../node_modules/swagger-ui-dist/**"
+    "index": {
+      "includeFiles": "node_modules/swagger-ui-dist/**"
     }
   }
 }
