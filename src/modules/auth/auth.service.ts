@@ -1,175 +1,432 @@
 import {
+  AdminCreateUserCommand,
+  AdminDisableUserCommand,
+  AdminEnableUserCommand,
+  CognitoIdentityProviderClient,
+  ConfirmForgotPasswordCommand,
+  ForgotPasswordCommand,
+  GetUserCommand,
+  InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
+  SignUpCommand,
+  UpdateUserAttributesCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
+import {
   BadRequestException,
-  ConflictException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { SignInDto } from './dto/sign-in.dto';
-import { FirebaseConfigService } from '../../firebase/firebase.config';
-import {
-  getAuth,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { SignUpDto } from './dto/sign-up.dto';
-import { UserRecord } from 'firebase-admin/auth';
-import {
-  firebaseAdmin,
-  firestoreDb,
-} from '../../firebase/firebase-admin.config';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
+import { AuthError, AuthUser } from 'src/models/auth.model';
+import { AdminCreateUserDto } from './dto/auth.dto';
+import { firestoreDb } from '../../firebase/firebase-admin.config';
+// import { generateRandomPassword } from 'src/utils/password.utils';
+
+function decodeJWT(token: string): { exp?: number; sub?: string } {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return {};
+  }
+}
+
+function getErrorMessage(error: any): string {
+  switch (error.name) {
+    case 'NotAuthorizedException':
+      return 'Email ou senha incorretos';
+    case 'UserNotFoundException':
+      return 'Usuário não encontrado';
+    case 'InvalidPasswordException':
+      return 'Senha deve ter pelo menos 8 caracteres';
+    case 'UsernameExistsException':
+      return 'Este email já está cadastrado';
+    case 'InvalidParameterException':
+      return 'Parâmetros inválidos';
+    case 'CodeMismatchException':
+      return 'Código de verificação incorreto';
+    case 'ExpiredCodeException':
+      return 'Código de verificação expirado';
+    case 'LimitExceededException':
+      return 'Muitas tentativas. Tente novamente mais tarde';
+    default:
+      return error.message || 'Erro desconhecido';
+  }
+}
 
 @Injectable()
 export class AuthService {
-  private readonly firebaseApiKey: string;
-  private readonly emailVerificationUrl: string;
+  private cognitoClient: CognitoIdentityProviderClient;
+  private userPoolClientId: string;
+  private userPoolId: string;
+  private awsRegion: string;
+  private awsAccessKeyId: string;
+  private awsSecretAccessKey: string;
 
-  constructor(
-    private readonly firebaseConfigService: FirebaseConfigService,
-    private readonly emailService: EmailService,
-    private readonly configService: ConfigService,
-  ) {
-    this.firebaseApiKey =
-      this.configService.get<string>('FIREBASE_API_KEY') || '';
-    this.emailVerificationUrl =
-      this.configService.get<string>('EMAIL_VERIFICATION_URL') || '';
+  constructor(private configService: ConfigService) {
+    this.awsRegion =
+      this.configService.get<string>('AWS_REGION') ?? 'default-region';
+    this.userPoolClientId =
+      this.configService.get<string>('AWS_USER_POOL_CLIENT_ID') ??
+      'default-client-id';
+    this.userPoolId =
+      this.configService.get<string>('AWS_USER_POOL_ID') ??
+      'default-user-pool-id';
+    this.awsAccessKeyId =
+      this.configService.get<string>('AWS_ACCESS_KEY_ID') ??
+      'default-access-key-id';
+    this.awsSecretAccessKey =
+      this.configService.get<string>('AWS_SECRET_ACCESS_KEY') ??
+      'default-secret-access-key';
 
-  }
+    this.cognitoClient = new CognitoIdentityProviderClient({
+      region: this.awsRegion,
+      credentials: {
+        accessKeyId: this.awsAccessKeyId,
+        secretAccessKey: this.awsSecretAccessKey,
+      },
+    });
 
-  async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
-    try {
-      const auth = getAuth(this.firebaseConfigService.firebaseApp);
-
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        signInDto.email,
-        signInDto.password,
+    if (!this.awsAccessKeyId || !this.awsSecretAccessKey) {
+      throw new InternalServerErrorException(
+        'Não foi possível encontrar as credenciais da AWS. Verifique seu arquivo .env.',
       );
-
-      const token = await userCredential.user.getIdToken();
-
-      return { accessToken: token };
-    } catch (error) {
-      switch (error.code) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-          throw new UnauthorizedException('E-mail ou senha inválidos.');
-        case 'auth/user-disabled':
-          throw new UnauthorizedException('Esta conta está desativada.');
-        default:
-          console.error('Erro inesperado no signIn:', error);
-          throw new InternalServerErrorException('Ocorreu um erro ao tentar fazer login.');
-      }
-  }
-}
-
-  async signUp(
-    signUpDto: SignUpDto,
-  ): Promise<{ message: string }> {
-    const { name, email, password, authorized, weight, height, birthday } =
-      signUpDto;
-
-    let newUserRecord: UserRecord;
-
-    try {
-      newUserRecord = await firebaseAdmin.auth().createUser({
-        email,
-        password,
-        displayName: name,
-        disabled: false,
-      });
-    } catch (error) {
-       switch (error.code) {
-        case 'auth/email-already-exists':
-          throw new ConflictException('Este e-mail já está em uso.');
-        case 'auth/invalid-password':
-          throw new BadRequestException('A senha deve ter no mínimo 6 caracteres.');
-        default:
-          console.error('Erro ao criar usuário no Firebase Auth:', error);
-          throw new InternalServerErrorException('Ocorreu um erro ao criar a conta.');
-      }
     }
+    if (!this.userPoolId || !this.userPoolClientId) {
+      throw new InternalServerErrorException(
+        'Configuração do pool de usuários do Cognito não encontrada. Verifique seu arquivo .env.',
+      );
+    }
+  }
 
+  async signIn(email: string, password: string): Promise<AuthUser> {
     try {
-      await firestoreDb.collection('users').doc(newUserRecord.uid).set({
-        name,
-        email,
-        authorized,
-        weight,
-        height,
-        birthday,
-        email_verified: false,
-        status: 'pending_verification',
-        role: 'patient',
-        createdAt: new Date().toISOString(),
+      const command = new InitiateAuthCommand({
+        AuthFlow: 'USER_PASSWORD_AUTH',
+        ClientId: this.userPoolClientId,
+        AuthParameters: { USERNAME: email, PASSWORD: password },
       });
+      const response = await this.cognitoClient.send(command);
 
-      const actionCodeSettings = {
-        url: this.emailVerificationUrl,
-        handleCodeInApp: true,
-      };
+      if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
+        const respondToChallengeCommand = new RespondToAuthChallengeCommand({
+          ChallengeName: 'NEW_PASSWORD_REQUIRED',
+          ClientId: this.userPoolClientId,
+          ChallengeResponses: {
+            USERNAME: email,
+            NEW_PASSWORD: password,
+          },
+          Session: response.Session,
+        });
+        const challengeResponse = await this.cognitoClient.send(
+          respondToChallengeCommand,
+        );
 
-      const actionLink = await firebaseAdmin
-        .auth()
-        .generateEmailVerificationLink(email, actionCodeSettings);
+        if (!challengeResponse.AuthenticationResult) {
+          throw new UnauthorizedException(
+            'Authentication failed after password challenge',
+          );
+        }
 
-      await this.emailService.sendCustomVerificationEmail(email, actionLink);
+        const { AccessToken, RefreshToken, IdToken } =
+          challengeResponse.AuthenticationResult;
+
+        if (!AccessToken || !RefreshToken || !IdToken) {
+          throw new UnauthorizedException('Missing authentication tokens');
+        }
+
+        const decoded = decodeJWT(AccessToken);
+        const expiresAt = decoded.exp
+          ? decoded.exp * 1000
+          : Date.now() + 60 * 60 * 1000;
+
+        const userCommand = new GetUserCommand({ AccessToken });
+        const userResponse = await this.cognitoClient.send(userCommand);
+        const userAttributes = userResponse.UserAttributes || [];
+
+        const email_attr =
+          userAttributes.find((attr) => attr.Name === 'email')?.Value || email;
+        const sub_attr =
+          userAttributes.find((attr) => attr.Name === 'sub')?.Value || '';
+        const role_attr =
+          userAttributes.find((attr) => attr.Name === 'custom:role')?.Value ||
+          'user';
+        const name_attr =
+          userAttributes.find((attr) => attr.Name === 'name')?.Value || '';
+
+        return {
+          email: email_attr,
+          sub: sub_attr,
+          role: role_attr,
+          name: name_attr,
+          accessToken: AccessToken,
+          refreshToken: RefreshToken,
+          idToken: IdToken,
+          expiresAt,
+        };
+      }
+
+      if (!response.AuthenticationResult) {
+        throw new UnauthorizedException('Authentication failed');
+      }
+
+      const { AccessToken, RefreshToken, IdToken } =
+        response.AuthenticationResult;
+
+      if (!AccessToken || !RefreshToken || !IdToken) {
+        throw new UnauthorizedException('Missing authentication tokens');
+      }
+
+      const decoded = decodeJWT(AccessToken);
+      const expiresAt = decoded.exp
+        ? decoded.exp * 1000
+        : Date.now() + 60 * 60 * 1000;
+
+      const userCommand = new GetUserCommand({ AccessToken });
+      const userResponse = await this.cognitoClient.send(userCommand);
+      const userAttributes = userResponse.UserAttributes || [];
+
+      const email_attr =
+        userAttributes.find((attr) => attr.Name === 'email')?.Value || email;
+      const sub_attr =
+        userAttributes.find((attr) => attr.Name === 'sub')?.Value || '';
+      const role_attr =
+        userAttributes.find((attr) => attr.Name === 'custom:role')?.Value ||
+        'user';
+      const name_attr =
+        userAttributes.find((attr) => attr.Name === 'name')?.Value || '';
 
       return {
-        message: 'Usuário criado com sucesso. Verifique seu e-mail para ativar a conta.',
+        email: email_attr,
+        sub: sub_attr,
+        role: role_attr,
+        name: name_attr,
+        accessToken: AccessToken,
+        refreshToken: RefreshToken,
+        idToken: IdToken,
+        expiresAt,
       };
-    } catch (error) {
-      if (newUserRecord) {
-        await firebaseAdmin.auth().deleteUser(newUserRecord.uid);
+    } catch (error: any) {
+      if (
+        error.code === 'NotAuthorizedException' ||
+        error.code === 'UserNotConfirmedException'
+      ) {
+        throw new UnauthorizedException(error.message);
       }
-      console.error('Erro na etapa de pós-criação (Firestore/E-mail):', error);
-      throw new InternalServerErrorException('Ocorreu uma falha no processo de cadastro. Tente novamente.');
+      throw new BadRequestException(error.message);
     }
   }
 
-async verifyEmailAndActivateUser(actionCode: string): Promise<{ message: string }> {
-  const firebaseRestUrl = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${this.firebaseApiKey}`;
+  async getNewAccessToken(refreshToken: string): Promise<AuthUser> {
+    try {
+      const command = new InitiateAuthCommand({
+        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        ClientId: this.userPoolClientId,
+        AuthParameters: {
+          REFRESH_TOKEN: refreshToken,
+        },
+      });
+      const response = await this.cognitoClient.send(command);
 
-  try {
-    const response = await axios.post(firebaseRestUrl, {
-      oobCode: actionCode,
-    });
+      if (!response.AuthenticationResult)
+        throw new Error('Token refresh failed');
+      const { AccessToken, IdToken } = response.AuthenticationResult;
+      if (!AccessToken || !IdToken)
+        throw new Error('Missing tokens in refresh response');
 
-    const uid = response.data.localId;
-    if (!uid) {
-      throw new Error('UID do usuário não retornado pela API do Firebase.');
+      const decoded = decodeJWT(AccessToken);
+      const expiresAt = decoded.exp
+        ? decoded.exp * 1000
+        : Date.now() + 60 * 60 * 1000;
+
+      const userCommand = new GetUserCommand({ AccessToken });
+      const userResponse = await this.cognitoClient.send(userCommand);
+      const userAttributes = userResponse.UserAttributes || [];
+
+      const email_attr =
+        userAttributes.find((attr) => attr.Name === 'email')?.Value || '';
+      const sub_attr =
+        userAttributes.find((attr) => attr.Name === 'sub')?.Value || '';
+      const role_attr =
+        userAttributes.find((attr) => attr.Name === 'custom:role')?.Value ||
+        'user';
+      const name_attr =
+        userAttributes.find((attr) => attr.Name === 'name')?.Value || '';
+
+      const user: AuthUser = {
+        email: email_attr,
+        sub: sub_attr,
+        role: role_attr,
+        name: name_attr,
+        accessToken: AccessToken,
+        refreshToken:
+          response.AuthenticationResult.RefreshToken || refreshToken,
+        idToken: IdToken,
+        expiresAt,
+      };
+      return user;
+    } catch (error: any) {
+      throw {
+        code: error.name || 'TokenRefreshError',
+        message: getErrorMessage(error),
+      } as AuthError;
     }
+  }
 
-    await firestoreDb.collection('users').doc(uid).update({
-      email_verified: true,
-      status: 'active',
-      updatedAt: new Date().toISOString(),
-    });
-
-    return { message: 'E-mail verificado com sucesso.' };
-  } catch (error) {
-    const firebaseError = error.response?.data?.error?.message;
-      if (firebaseError === 'INVALID_OOB_CODE' || firebaseError === 'EXPIRED_OOB_CODE') {
-        throw new BadRequestException('Link de verificação inválido ou expirado.');
-      }
-      console.error('Falha ao verificar e-mail:', error.response?.data || error.message);
-      throw new InternalServerErrorException('Ocorreu um erro ao verificar o e-mail.');
+  async updateUserAttributes(
+    accessToken: string,
+    attributes: { Name: string; Value: string }[],
+  ): Promise<void> {
+    try {
+      const command = new UpdateUserAttributesCommand({
+        AccessToken: accessToken,
+        UserAttributes: attributes,
+      });
+      await this.cognitoClient.send(command);
+    } catch (error: any) {
+      throw {
+        code: error.name || 'UpdateUserAttributesError',
+        message: getErrorMessage(error),
+      } as AuthError;
     }
-}
+  }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
-    const { email } = forgotPasswordDto;
-    const auth = getAuth(this.firebaseConfigService.firebaseApp);
+  async forgotPassword(email: string): Promise<void> {
+    try {
+      const command = new ForgotPasswordCommand({
+        ClientId: this.userPoolClientId,
+        Username: email,
+      });
+      await this.cognitoClient.send(command);
+    } catch (error: any) {
+      throw {
+        code: error.name || 'ForgotPasswordError',
+        message: getErrorMessage(error),
+      } as AuthError;
+    }
+  }
+
+  async confirmForgotPassword(
+    email: string,
+    confirmationCode: string,
+    newPassword: string,
+  ): Promise<void> {
+    try {
+      const command = new ConfirmForgotPasswordCommand({
+        ClientId: this.userPoolClientId,
+        Username: email,
+        ConfirmationCode: confirmationCode,
+        Password: newPassword,
+      });
+      await this.cognitoClient.send(command);
+    } catch (error: any) {
+      throw {
+        code: error.name || 'ConfirmForgotPasswordError',
+        message: getErrorMessage(error),
+      } as AuthError;
+    }
+  }
+
+  async adminCreateUser(data: AdminCreateUserDto) {
+    const { email, name, password, birthday, height, weight, authorizedTerms } =
+      data;
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      const command = new AdminCreateUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: email,
+        TemporaryPassword: password,
+        UserAttributes: [
+          { Name: 'email', Value: email },
+          { Name: 'name', Value: name },
+          { Name: 'email_verified', Value: 'true' },
+        ],
+      });
+      const res = await this.cognitoClient.send(command);
+
+      if (!res.User) {
+        throw new BadRequestException('Criação de usuário falhou');
+      }
+
+      const id = res.User.Username || '';
+
+      await firestoreDb.collection('users').doc(id).set({
+        name,
+        email,
+        birthday,
+        height,
+        weight,
+        authorizedTerms,
+        createdAt: new Date(),
+      });
+
+      const userDoc = await firestoreDb.collection('users').doc(id).get();
+
+      if (!userDoc) {
+        throw new InternalServerErrorException('Erro ao recuperar usuário');
+      }
+
+      return userDoc.data();
     } catch (error) {
-      console.error('Erro ao solicitar redefinição de senha:', error);
+      console.error('Erro ao criar usuário no Cognito:', error);
+      const errorMessage = getErrorMessage(error);
+      if (
+        error.name === 'UsernameExistsException' ||
+        error.name === 'InvalidParameterException'
+      ) {
+        throw new BadRequestException(errorMessage);
+      }
+      throw new InternalServerErrorException(
+        `Erro Cognito: ${errorMessage} (${error.name || 'UnknownError'})`,
+      );
+    }
+  }
+
+  async adminDisableUser(email: string): Promise<void> {
+    try {
+      const command = new AdminDisableUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: email,
+      });
+      await this.cognitoClient.send(command);
+    } catch (error: any) {
+      if (error.code === 'UserNotFoundException') {
+        throw new BadRequestException('Usuário não encontrado.');
+      }
+      if (error.code === 'InvalidParameterException') {
+        throw new BadRequestException(getErrorMessage(error));
+      }
+      throw new InternalServerErrorException(
+        'Erro inesperado ao desabilitar o usuário no Cognito.',
+      );
+    }
+  }
+
+  async adminEnableUser(email: string): Promise<void> {
+    try {
+      const command = new AdminEnableUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: email,
+      });
+      await this.cognitoClient.send(command);
+    } catch (error: any) {
+      if (error.code === 'UserNotFoundException') {
+        throw new BadRequestException('Usuário não encontrado.');
+      }
+      if (error.code === 'InvalidParameterException') {
+        throw new BadRequestException(getErrorMessage(error));
+      }
+      throw new InternalServerErrorException(
+        'Erro inesperado ao habilitar o usuário no Cognito.',
+      );
     }
   }
 }
