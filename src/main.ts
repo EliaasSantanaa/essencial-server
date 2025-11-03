@@ -20,8 +20,8 @@ async function bootstrap() {
   // Disponibilizar o JSON do Swagger
   SwaggerModule.setup('api', app, document);
 
-  // Configurar Scalar apenas em desenvolvimento
-  if (process.env.NODE_ENV !== 'production') {
+  // Configurar Scalar (agora disponível em produção também)
+  try {
     const { apiReference } = await import('@scalar/nestjs-api-reference');
     app.use(
       '/docs',
@@ -30,7 +30,9 @@ async function bootstrap() {
         url: '/api-json',
       }),
     );
-    logger.log(`Scalar documentation: http://localhost:${configService.get('PORT')}/docs`);
+    logger.log(`📚 Scalar documentation available`);
+  } catch (error) {
+    logger.warn('Scalar documentation not available');
   }
 
   app.enableCors({
@@ -43,8 +45,9 @@ async function bootstrap() {
 
   const port = configService.get('PORT') ?? 3002;
   await app.listen(port);
-  logger.log(`Application is running on: http://localhost:${port}`);
-  logger.log(`Swagger UI: http://localhost:${port}/api`);
-  logger.log(`API JSON: http://localhost:${port}/api-json`);
+  logger.log(`🚀 Application is running on: http://localhost:${port}`);
+  logger.log(`📚 Scalar UI: http://localhost:${port}/docs`);
+  logger.log(`📄 Swagger UI: http://localhost:${port}/api`);
+  logger.log(`🔧 API JSON: http://localhost:${port}/api-json`);
 }
 bootstrap();
