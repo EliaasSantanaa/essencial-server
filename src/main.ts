@@ -1,12 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const logger = new Logger('StartApplication')
+  
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Essencial Server API')
     .setDescription('Documentação da API do Essencial Server')
@@ -14,7 +17,18 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+
+  // Disponibilizar o JSON do Swagger
+  SwaggerModule.setup('api', app, document);
+
+  // Configurar Scalar
+  app.use(
+    '/docs',
+    apiReference({
+      theme: 'purple',
+      url: '/api-json',
+    }),
+  );
 
   app.enableCors({
     origin: true,
@@ -26,7 +40,7 @@ async function bootstrap() {
 
   const port = configService.get('PORT') ?? 3002;
   await app.listen(port);
-  console.log(`Server is running at http://localhost:${port}`);
-  console.log(`Swagger docs is running at http://localhost:${port}/api/docs`);
+  logger.debug(`Application is running on: http://localhost:${port}`);
+  logger.debug(`Scalar docs available at: http://localhost:${port}/docs`);
 }
 bootstrap();
