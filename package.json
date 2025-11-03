@@ -26,6 +26,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.1",
+    "@scalar/nestjs-api-reference": "^1.0.6",
     "@sendgrid/mail": "^8.1.6",
     "@vercel/node": "^5.3.24",
     "axios": "^1.12.2",
