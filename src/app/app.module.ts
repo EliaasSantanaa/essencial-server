@@ -6,7 +6,7 @@ import { DoctorModule } from '../modules/doctor/doctor.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { FirebaseModule } from '../firebase/firebase.module';
 import { EmailModule } from '../modules/email/email.module';
-import { UsersModule } from 'src/modules/users/users.module';
+import { UsersModule } from '../modules/users/users.module';
 
 @Module({
   imports: [
