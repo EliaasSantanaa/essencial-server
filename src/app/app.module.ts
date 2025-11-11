@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { PatientModule } from '../modules/patient/patient.module';
 import { DoctorModule } from '../modules/doctor/doctor.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { FirebaseModule } from '../firebase/firebase.module';
 import { EmailModule } from '../modules/email/email.module';
+import { UsersModule } from '../modules/users/users.module';
 
 @Module({
   imports: [
@@ -15,11 +15,11 @@ import { EmailModule } from '../modules/email/email.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    PatientModule,
     DoctorModule,
     AuthModule,
     FirebaseModule,
     EmailModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
