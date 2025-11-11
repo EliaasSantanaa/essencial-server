@@ -7,6 +7,7 @@ import { AuthModule } from '../modules/auth/auth.module';
 import { FirebaseModule } from '../firebase/firebase.module';
 import { EmailModule } from '../modules/email/email.module';
 import { UsersModule } from '../modules/users/users.module';
+import { AppointmentsModule } from '../modules/appointments/appointments.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UsersModule } from '../modules/users/users.module';
     FirebaseModule,
     EmailModule,
     UsersModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
