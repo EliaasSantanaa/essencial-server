@@ -16,6 +16,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
+  ApiCookieAuth,
 } from '@nestjs/swagger';
 
 import {
@@ -90,6 +91,10 @@ export class AuthController {
 
   @Post('session')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Renova o access token usando o refresh token do cookie' })
+  @ApiResponse({ status: 200, description: 'Sessão renovada com sucesso. Retorna novo access token e dados do usuário.' })
+  @ApiResponse({ status: 401, description: 'Refresh token ausente, inválido ou expirado.' })
+  @ApiCookieAuth('auth-refresh-token')
   async getSession(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
