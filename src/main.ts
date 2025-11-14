@@ -15,6 +15,9 @@ async function bootstrap() {
     .setTitle('Essencial Server API')
     .setDescription('Documentação da API do Essencial Server')
     .setVersion('1.0')
+    .addTag('Auth')
+    .addTag('Users')
+    .addTag('Appointments')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
