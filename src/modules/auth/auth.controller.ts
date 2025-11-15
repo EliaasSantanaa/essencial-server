@@ -100,6 +100,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const refreshToken = request.cookies['auth-refresh-token'];
+    
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token available');
     }
@@ -125,8 +126,9 @@ export class AuthController {
           expiresAt: authUser.expiresAt,
         },
       };
-    } catch (error) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+    } catch (error: any) {
+      console.error('Session error:', error);
+      throw new UnauthorizedException(error.message || 'Invalid or expired refresh token');
     }
   }
 
