@@ -2,96 +2,317 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<h1 align="center">Clínica Essencial - API Backend</h1>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">
+  Sistema de gerenciamento de clínica médica desenvolvido como projeto acadêmico integrando todas as disciplinas do semestre
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Sobre o Projeto
 
-## Project setup
+**Clínica Essencial** é uma API REST completa para gerenciamento de clínicas médicas, desenvolvida como **projeto de apresentação na faculdade**, integrando conhecimentos de múltiplas matérias semestrais:
+
+- 🏗️ **Engenharia de Software**: Arquitetura em camadas, padrões de projeto
+- 💾 **Banco de Dados**: Firestore (NoSQL), modelagem de dados
+- 🔐 **Segurança**: Autenticação JWT, Firebase Authentication
+- 🤖 **Inteligência Artificial**: Chatbot com IA para consultas (Groq/Llama)
+- 🌐 **Desenvolvimento Web**: API RESTful, documentação Swagger
+- 📧 **Integração**: SendGrid para e-mails, AWS Cognito
+
+---
+
+## 🚀 Tecnologias Utilizadas
+
+### Core
+- **[NestJS](https://nestjs.com/)** - Framework Node.js progressivo
+- **[TypeScript](https://www.typescriptlang.org/)** - Linguagem tipada
+- **[Node.js](https://nodejs.org/)** - Runtime JavaScript
+
+### Banco de Dados & Autenticação
+- **[Firebase Firestore](https://firebase.google.com/docs/firestore)** - Banco de dados NoSQL
+- **[Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)** - Gerenciamento servidor
+- **[AWS Cognito](https://aws.amazon.com/cognito/)** - Autenticação de usuários
+
+### Inteligência Artificial
+- **[Groq SDK](https://console.groq.com/)** - API de IA ultrarrápida
+- **[Llama 3.3](https://ai.meta.com/llama/)** - Modelo de linguagem open-source
+
+### Serviços Externos
+- **[SendGrid](https://sendgrid.com/)** - Envio de e-mails transacionais
+- **[Vercel](https://vercel.com/)** - Deploy e hospedagem
+
+---
+
+## 📦 Funcionalidades
+
+### 1. Gestão de Médicos
+- ✅ Cadastro de médicos
+- ✅ Listagem e busca
+- ✅ Atualização de dados
+- ✅ Remoção de médicos
+
+### 2. Gestão de Agendamentos
+- ✅ Criação de consultas
+- ✅ Listagem e filtros
+- ✅ Atualização de status
+- ✅ Cancelamento de consultas
+
+### 3. Gestão de Usuários
+- ✅ Registro com verificação de e-mail
+- ✅ Login e autenticação JWT
+- ✅ Atualização de perfil
+- ✅ Recuperação de senha
+
+### 4. Chatbot com IA 🤖
+- ✅ Consulta de médicos por especialidade
+- ✅ Listagem de agendamentos por data
+- ✅ Estatísticas do sistema
+- ✅ Consulta de usuários cadastrados
+- ✅ Processamento de linguagem natural
+
+---
+
+## ⚙️ Configuração e Instalação
+
+### Pré-requisitos
+
+- **Node.js** (v18 ou superior)
+- **npm** ou **yarn**
+- Conta **Firebase** (Firestore + Authentication)
+- Conta **SendGrid** (para e-mails)
+- Conta **Groq** (para chatbot IA - gratuita)
+
+### 1. Clone o Repositório
 
 ```bash
-$ yarn install
+git clone https://github.com/EliaasSantanaa/essencial-server.git
+cd essencial-server
 ```
-## Compile and run the project
+
+### 2. Instale as Dependências
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+npm install
+# ou
+yarn install
 ```
 
-## Run tests
+### 3. Configure as Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+# Servidor
+PORT=3001
+
+# SendGrid (E-mail)
+SENDGRID_API_KEY=sua_chave_sendgrid
+
+# Firebase
+FIREBASE_SERVICE_ACCOUNT_BASE64=seu_service_account_base64
+FIREBASE_API_KEY=sua_api_key
+FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+FIREBASE_PROJECT_ID=seu_projeto_id
+FIREBASE_STORAGE_BUCKET=seu_projeto.firebasestorage.app
+FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
+FIREBASE_APP_ID=seu_app_id
+
+# URLs
+EMAIL_VERIFICATION_URL=http://localhost:3001/auth/verify-email
+
+# AWS Cognito
+AWS_REGION=sa-east-1
+AWS_USER_POOL_CLIENT_ID=seu_client_id
+AWS_USER_POOL_ID=seu_pool_id
+AWS_ACCESS_KEY_ID=sua_access_key
+AWS_SECRET_ACCESS_KEY=sua_secret_key
+
+# Groq (Chatbot IA)
+GROQ_API_KEY=sua_chave_groq
+```
+
+### 4. Configure o Firebase
+
+1. Acesse [Firebase Console](https://console.firebase.google.com/)
+2. Crie um projeto
+3. Ative **Firestore Database**
+4. Ative **Authentication** (Email/Password)
+5. Baixe o `service-account.json`
+6. Converta para Base64:
+   ```bash
+   # Linux/Mac
+   base64 -i service-account.json
+   
+   # Windows (PowerShell)
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("service-account.json"))
+   ```
+7. Cole o resultado em `FIREBASE_SERVICE_ACCOUNT_BASE64`
+
+### 5. Configure o Groq (Chatbot)
+
+1. Acesse [Groq Console](https://console.groq.com/)
+2. Crie uma conta (grátis)
+3. Vá em **API Keys**
+4. Crie uma nova chave
+5. Cole em `GROQ_API_KEY`
+
+### 6. Execute o Projeto
 
 ```bash
-# unit tests
-$ yarn run test
+# Desenvolvimento
+npm run start:dev
 
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+# Produção
+npm run build
+npm run start:prod
 ```
 
-## Deployment
+A API estará rodando em: `http://localhost:3001`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 📚 Documentação da API
+
+### Endpoints Principais
+
+#### Autenticação
+```http
+POST /auth/register        # Registrar usuário
+POST /auth/login          # Login
+POST /auth/verify-email   # Verificar e-mail
+```
+
+#### Médicos
+```http
+GET    /doctors           # Listar médicos
+POST   /doctors           # Criar médico
+PATCH  /doctors/:id       # Atualizar médico
+DELETE /doctors/:id       # Remover médico
+```
+
+#### Agendamentos
+```http
+GET    /appointments      # Listar agendamentos
+POST   /appointments      # Criar agendamento
+PATCH  /appointments/:id  # Atualizar agendamento
+DELETE /appointments/:id  # Cancelar agendamento
+```
+
+#### Usuários
+```http
+GET    /users             # Listar usuários
+PATCH  /users/:id         # Atualizar usuário
+```
+
+#### Chatbot IA 🤖
+```http
+POST   /chat              # Enviar mensagem ao chatbot
+DELETE /chat/:id          # Limpar histórico da conversa
+```
+
+**Exemplo de uso do Chat:**
+```json
+POST /chat
+{
+  "message": "Quantos médicos cardiologistas temos?"
+}
+```
+
+---
+
+## 🤖 Chatbot - Como Usar
+
+O assistente virtual responde perguntas como:
+
+- "Olá, o que você faz?"
+- "Quantos médicos temos cadastrados?"
+- "Quais especialidades estão disponíveis?"
+- "Quantos agendamentos temos hoje?"
+- "Me mostre os médicos cardiologistas"
+- "Quantos usuários estão cadastrados?"
+
+Veja mais detalhes em: [CHAT_AI_README.md](./CHAT_AI_README.md)
+
+---
+
+## 🧪 Testando a API
+
+### Postman
+Importe as collections disponíveis:
+- `postman-chat-collection.json` - Testes do chatbot
+- Use o arquivo `chat-tests.http` com a extensão REST Client do VSCode
+
+### Exemplos cURL
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# Listar médicos
+curl http://localhost:3001/doctors
+
+# Enviar mensagem ao chatbot
+curl -X POST http://localhost:3001/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Quantos médicos temos?"}'
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 📁 Estrutura do Projeto
 
-Check out a few resources that may come in handy when working with NestJS:
+```
+src/
+├── app/                    # Módulo principal
+├── firebase/               # Configuração Firebase
+├── models/                 # Modelos de dados
+└── modules/
+    ├── appointments/       # Gestão de agendamentos
+    ├── auth/              # Autenticação
+    ├── chat/              # Chatbot IA
+    ├── doctors/           # Gestão de médicos
+    ├── email/             # Envio de e-mails
+    └── users/             # Gestão de usuários
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🎓 Contexto Acadêmico
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Este projeto foi desenvolvido como **trabalho integrador** para apresentação na faculdade, contemplando as seguintes disciplinas:
 
-## Stay in touch
+| Disciplina | Aplicação no Projeto |
+|-----------|---------------------|
+| **Engenharia de Software** | Arquitetura modular, padrões de projeto |
+| **Banco de Dados** | Modelagem NoSQL, Firestore |
+| **Programação Web** | API RESTful, NestJS, TypeScript |
+| **Segurança da Informação** | JWT, Firebase Auth, AWS Cognito |
+| **Inteligência Artificial** | Chatbot com Groq/Llama 3.3 |
+| **Gestão de Projetos** | Git, documentação, versionamento |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 👥 Equipe
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Desenvolvedor**: Elias Santana
+- **GitHub**: [@EliaasSantanaa](https://github.com/EliaasSantanaa)
+
+---
+
+## 📄 Licença
+
+Este projeto foi desenvolvido para fins acadêmicos.
+
+---
+
+## 🔗 Links Úteis
+
+- [Documentação NestJS](https://docs.nestjs.com)
+- [Firebase Docs](https://firebase.google.com/docs)
+- [Groq Console](https://console.groq.com)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs)
+
+---
+
+<p align="center">
+  Desenvolvido com ❤️ para apresentação acadêmica
+</p>
