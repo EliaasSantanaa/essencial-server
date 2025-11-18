@@ -41,7 +41,7 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: true,
+    origin: ['http://localhost:3000', 'https://essencial-dev.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
