@@ -1,0 +1,161 @@
+{
+  "info": {
+    "name": "Chat IA - Essencial Server",
+    "description": "Testes do chatbot com IA que busca dados no Firestore",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Listar Médicos",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Quais médicos vocês têm disponíveis?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat"]
+        }
+      }
+    },
+    {
+      "name": "2. Buscar Cardiologista",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Tem algum cardiologista disponível?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat"]
+        }
+      }
+    },
+    {
+      "name": "3. Buscar por Nome",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Procuro o Dr. João Silva\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat"]
+        }
+      }
+    },
+    {
+      "name": "4. Perguntar sobre Consultas",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Quais são as próximas consultas agendadas?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat"]
+        }
+      }
+    },
+    {
+      "name": "5. Continuar Conversa (com contexto)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Me fale mais sobre o primeiro\",\n  \"conversationId\": \"COLE_AQUI_O_ID_RETORNADO\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat"]
+        }
+      }
+    },
+    {
+      "name": "6. Pergunta Geral",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Qual o horário de funcionamento da clínica?\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3001/chat",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat"]
+        }
+      }
+    },
+    {
+      "name": "7. Limpar Histórico",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/chat/COLE_AQUI_O_CONVERSATION_ID",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": ["chat", "COLE_AQUI_O_CONVERSATION_ID"]
+        }
+      }
+    }
+  ]
+}
