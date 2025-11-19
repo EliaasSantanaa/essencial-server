@@ -8,6 +8,7 @@ import { EmailModule } from '../modules/email/email.module';
 import { UsersModule } from '../modules/users/users.module';
 import { AppointmentsModule } from '../modules/appointments/appointments.module';
 import { DoctorsModule } from '../modules/doctors/doctors.module';
+import { ChatModule } from '../modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DoctorsModule } from '../modules/doctors/doctors.module';
     EmailModule,
     UsersModule,
     AppointmentsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

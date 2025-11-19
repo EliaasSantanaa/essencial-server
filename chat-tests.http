@@ -1,0 +1,137 @@
+### 🤖 Chatbot IA - Testes de Consulta
+
+### 1. Saudação - O que o chatbot faz?
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Olá, o que você faz?"
+}
+
+###
+
+### 2. Listar todos os médicos
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quais médicos vocês têm?"
+}
+
+###
+
+### 3. Buscar médicos por especialidade
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Tem algum cardiologista disponível?"
+}
+
+###
+
+### 4. Buscar médico por nome
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Procuro o Dr. João Silva"
+}
+
+###
+
+### 5. Consultar especialidades disponíveis
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quais especialidades médicas vocês atendem?"
+}
+
+###
+
+### 6. Contar médicos cadastrados
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quantos médicos estão cadastrados?"
+}
+
+###
+
+### 7. Listar agendamentos
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quais são os agendamentos cadastrados?"
+}
+
+###
+
+### 8. Agendamentos de hoje
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quantos agendamentos temos hoje?"
+}
+
+###
+
+### 9. Agendamentos de uma data específica
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quantos agendamentos temos para o dia 2025-11-20?"
+}
+
+###
+
+### 10. Listar usuários cadastrados
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Quantos usuários estão cadastrados no sistema?"
+}
+
+###
+
+### 11. Estatísticas gerais
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Me dê um resumo do sistema"
+}
+
+###
+
+### 12. Continuar conversa (usar conversationId retornado)
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Me fale mais sobre eles",
+  "conversationId": "COLE_AQUI_O_ID_RETORNADO"
+}
+
+###
+
+### 13. Pergunta geral
+POST http://localhost:3001/chat
+Content-Type: application/json
+
+{
+  "message": "Qual o horário de funcionamento?"
+}
+
+###
+
+### 14. Limpar histórico da conversa
+DELETE http://localhost:3001/chat/COLE_AQUI_O_CONVERSATION_ID
+
+###
