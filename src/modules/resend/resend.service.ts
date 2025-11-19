@@ -45,7 +45,7 @@ export class ResendService {
     try {
         const { data, error } = await this.resendInstance.emails.send({
             from: this.fromEmail,
-            to: [patientEmail],
+            to: patientEmail,
             subject,
             html,
         });

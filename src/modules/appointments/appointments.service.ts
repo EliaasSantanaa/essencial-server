@@ -24,7 +24,7 @@ export class AppointmentsService {
     return appointments;
   }
 
-  async create(data: CreateAppointmentDto): Promise<any> {
+  async create(data: CreateAppointmentDto) {
     try {
       const newAppointmentRef = await firestoreDb
         .collection('appointments')
@@ -40,18 +40,17 @@ export class AppointmentsService {
         throw new BadRequestException('Falha ao criar agendamento.');
       }
 
-      const {date, hour, specialist} = data;
-      const dateString = new Date(date).toISOString().split('T')[0];
-      const fullDate = new Date(`${dateString}T${hour}:00`);
+      // const dateString = new Date(data.date).toISOString().split('T')[0];
+      // const fullDate = new Date(`${dateString}T${data.hour}:00`);
 
-      const emailDto: ISendAppointmentConfirmation = {
-        patientEmail: user.email,
-        patientName: user.name || 'Paciente',
-        doctorName: specialist,
-        appointmentDate: fullDate
-      };
+      // const email: ISendAppointmentConfirmation = {
+      //   patientEmail: data.patientEmail,
+      //   patientName: data.patientName,
+      //   doctorName: data.specialist,
+      //   appointmentDate: fullDate,
+      // };
 
-      await this.resendService.sendAppointmentConfirmationEmail(emailDto);
+      // await this.resendService.sendAppointmentConfirmationEmail(email);
 
       return {
         message: 'Agendamento criado com sucesso.',

@@ -27,4 +27,12 @@ export class CreateAppointmentDto {
   @IsString({ message: 'specialist deve ser uma string.' })
   @IsNotEmpty({ message: 'specialist é obrigatório.' })
   specialist: string;
+
+  @IsString({ message: 'patientEmail deve ser uma string.' })
+  @IsNotEmpty({ message: 'patientEmail é obrigatório.' })
+  patientEmail: string;
+
+  @IsString({ message: 'patientName deve ser uma string.' })
+  @IsNotEmpty({ message: 'patientName é obrigatório.' })
+  patientName: string;
 }
