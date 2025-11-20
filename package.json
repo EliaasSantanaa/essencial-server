@@ -30,6 +30,7 @@
     "@scalar/nestjs-api-reference": "^1.0.6",
     "@sendgrid/mail": "^8.1.6",
     "@vercel/node": "^5.3.24",
+    "aws-jwt-verify": "^5.1.1",
     "axios": "^1.13.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -39,6 +40,7 @@
     "firebase-admin": "^13.5.0",
     "groq-sdk": "^0.35.0",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.4.2",
     "rxjs": "^7.8.1",
     "swagger-ui-dist": "^5.30.0"
   },

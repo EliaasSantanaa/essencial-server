@@ -2,11 +2,15 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { firestoreDb } from 'src/firebase/firebase-admin.config';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { ResendService } from '../resend/resend.service';
+import { ISendAppointmentConfirmation } from 'src/models/appointment-template.model';
 
 @Injectable()
 export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
-  constructor() {}
+  constructor(
+    private readonly resendService: ResendService,
+  ) {}
 
   async findAll() {
     const usersSnapshot = await firestoreDb.collection('appointments').get();
@@ -20,7 +24,7 @@ export class AppointmentsService {
     return appointments;
   }
 
-  async create(data: CreateAppointmentDto): Promise<any> {
+  async create(data: CreateAppointmentDto) {
     try {
       const newAppointmentRef = await firestoreDb
         .collection('appointments')
@@ -35,6 +39,18 @@ export class AppointmentsService {
       if (!newAppointmentSnapshot.exists) {
         throw new BadRequestException('Falha ao criar agendamento.');
       }
+
+      // const dateString = new Date(data.date).toISOString().split('T')[0];
+      // const fullDate = new Date(`${dateString}T${data.hour}:00`);
+
+      // const email: ISendAppointmentConfirmation = {
+      //   patientEmail: data.patientEmail,
+      //   patientName: data.patientName,
+      //   doctorName: data.specialist,
+      //   appointmentDate: fullDate,
+      // };
+
+      // await this.resendService.sendAppointmentConfirmationEmail(email);
 
       return {
         message: 'Agendamento criado com sucesso.',

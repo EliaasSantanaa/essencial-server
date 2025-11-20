@@ -10,7 +10,7 @@ async function bootstrap() {
   app.use(cookieParser());
   const configService = app.get(ConfigService);
   const logger = new Logger('StartApplication');
-  
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Essencial Server API')
     .setDescription('Documentação da API do Essencial Server')
@@ -18,6 +18,10 @@ async function bootstrap() {
     .addTag('Auth')
     .addTag('Users')
     .addTag('Appointments')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'default',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
