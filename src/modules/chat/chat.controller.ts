@@ -1,8 +1,9 @@
 
-import { Controller, Post, Body, Delete, Param } from '@nestjs/common';
+import { Controller, Post, Body, Delete, Param, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatMessageDto, ChatResponseDto } from './dto/chat.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 /**
  * ChatController - Assistente Virtual da Clínica Essencial
@@ -44,6 +45,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/s
  * ```
  */
 @ApiTags('Chat')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
