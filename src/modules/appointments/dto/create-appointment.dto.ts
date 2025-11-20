@@ -31,16 +31,18 @@ export class CreateAppointmentDto {
   @ApiProperty({
     description: 'Email do paciente',
     example: 'paciente@example.com',
+    required: false,
   })
   @IsString({ message: 'patientEmail deve ser uma string.' })
   @IsOptional({ message: 'patientEmail é opcional.' })
-  patientEmail: string;
+  patientEmail?: string;
 
   @ApiProperty({
     description: 'Nome do paciente',
     example: 'Maria Oliveira',
+    required: false,
   })
   @IsString({ message: 'patientName deve ser uma string.' })
   @IsOptional({ message: 'patientName é opcional.' })
-  patientName: string;
+  patientName?: string;
 }
