@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsDate, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -28,11 +28,19 @@ export class CreateAppointmentDto {
   @IsNotEmpty({ message: 'specialist é obrigatório.' })
   specialist: string;
 
+  @ApiProperty({
+    description: 'Email do paciente',
+    example: 'paciente@example.com',
+  })
   @IsString({ message: 'patientEmail deve ser uma string.' })
-  @IsNotEmpty({ message: 'patientEmail é obrigatório.' })
+  @IsOptional({ message: 'patientEmail é opcional.' })
   patientEmail: string;
 
+  @ApiProperty({
+    description: 'Nome do paciente',
+    example: 'Maria Oliveira',
+  })
   @IsString({ message: 'patientName deve ser uma string.' })
-  @IsNotEmpty({ message: 'patientName é obrigatório.' })
+  @IsOptional({ message: 'patientName é opcional.' })
   patientName: string;
 }
