@@ -3,7 +3,7 @@ import { Controller, Post, Body, Delete, Param, UseGuards } from '@nestjs/common
 import { ChatService } from './chat.service';
 import { ChatMessageDto, ChatResponseDto } from './dto/chat.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { AuthGuard } from 'src/guards/auth.guard';
+import { AuthGuard } from '../../guards/auth.guard';
 
 /**
  * ChatController - Assistente Virtual da Clínica Essencial

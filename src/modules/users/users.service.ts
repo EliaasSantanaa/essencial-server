@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { firestoreDb } from '../../firebase/firebase-admin.config';
-import { create } from 'domain';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()

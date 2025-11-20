@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
-import { firestoreDb } from 'src/firebase/firebase-admin.config';
+import { firestoreDb } from '../../firebase/firebase-admin.config';
 
 @Injectable()
 export class DoctorsService {

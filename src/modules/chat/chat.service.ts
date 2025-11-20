@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Groq from 'groq-sdk';
-import { firestoreDb } from 'src/firebase/firebase-admin.config';
+import { firestoreDb } from '../../firebase/firebase-admin.config';
 import { ChatMessageDto, ChatResponseDto } from './dto/chat.dto';
 
 @Injectable()

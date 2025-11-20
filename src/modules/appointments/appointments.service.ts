@@ -1,15 +1,12 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { firestoreDb } from 'src/firebase/firebase-admin.config';
+import { firestoreDb } from '../../firebase/firebase-admin.config';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { ResendService } from '../resend/resend.service';
-import { ISendAppointmentConfirmation } from 'src/models/appointment-template.model';
 
 @Injectable()
 export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
   constructor(
-    private readonly resendService: ResendService,
   ) {}
 
   async findAll() {

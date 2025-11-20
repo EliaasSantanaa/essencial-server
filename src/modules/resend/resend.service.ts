@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { appointmentTemplate } from './templates/appointment.template';
-import { ISendAppointmentConfirmation } from 'src/models/appointment-template.model';
+import { ISendAppointmentConfirmation } from '../../models/appointment-template.model';
 
 @Injectable()
 export class ResendService {
