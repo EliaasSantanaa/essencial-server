@@ -124,4 +124,13 @@ export class AdminCreateUserDto {
   @IsBoolean({ message: 'authorizedTerms deve ser um booleano' })
   @IsNotEmpty({ message: 'authorizedTerms é obrigatório' })
   authorizedTerms: boolean;
+
+  @ApiProperty({
+    description: 'Status do usuário (ativo, inativo, etc.)',
+    example: 'ativo',
+    required: false,
+  })
+  @IsString({ message: 'status deve ser uma string' })
+  @IsOptional({ message: 'status é opcional' })
+  status?: string;
 }

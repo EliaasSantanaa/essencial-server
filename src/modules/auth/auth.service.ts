@@ -365,6 +365,7 @@ export class AuthService {
         height,
         weight,
         authorizedTerms,
+        status: 'ativo',
         createdAt: new Date(),
       });
 
