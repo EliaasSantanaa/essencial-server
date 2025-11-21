@@ -28,6 +28,10 @@ export class CreateAppointmentDto {
   @IsNotEmpty({ message: 'specialist é obrigatório.' })
   specialist: string;
 
+  @IsString({ message: 'patient_id deve ser uma string.' })
+  @IsNotEmpty({ message: 'patient_id é obrigatório.' })
+  patient_id: string;
+
   @ApiProperty({
     description: 'Email do paciente',
     example: 'paciente@example.com',

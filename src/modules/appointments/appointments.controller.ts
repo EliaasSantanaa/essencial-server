@@ -20,6 +20,16 @@ export class AppointmentsController {
         return appointments;
     }
 
+    @Get(':id')
+    @ApiOperation({ summary: 'Retorna uma consulta agendada pelo ID do paciente' })
+    @ApiParam({ name: 'id', description: 'O agendamento do paciente será retornado' })
+    @ApiResponse({ status: 200, description: 'Consulta retornada com sucesso.' })
+    @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
+    async findOne(@Param('patient_id') patient_id: string) {
+        const appointment = await this.appointmentsService.findOne(patient_id);
+        return appointment;
+    }
+
     @Post()
     @ApiOperation({ summary: 'Cria uma nova consulta agendada' })
     @ApiResponse({ status: 201, description: 'Agendamento criado com sucesso.' })

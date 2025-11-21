@@ -21,6 +21,24 @@ export class AppointmentsService {
     return appointments;
   }
 
+  async findOne(patient_id: string) {
+    const appointmentsSnapshot = await firestoreDb
+      .collection('appointments')
+      .where('patient_id', '==', patient_id)
+      .get();
+
+    if (appointmentsSnapshot.empty) {
+      throw new BadRequestException('Agendamento não encontrado.');
+    }
+
+    const appointment = appointmentsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))[0];
+
+    return appointment;
+  }
+
   async create(data: CreateAppointmentDto) {
     try {
       const newAppointmentRef = await firestoreDb
