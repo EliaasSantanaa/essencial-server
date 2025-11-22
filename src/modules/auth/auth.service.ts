@@ -366,6 +366,7 @@ export class AuthService {
         weight,
         authorizedTerms,
         status: 'ativo',
+        role: 'user',
         createdAt: new Date(),
       });
 
