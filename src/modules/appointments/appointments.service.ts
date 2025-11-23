@@ -21,7 +21,11 @@ export class AppointmentsService {
     return appointments;
   }
 
-  async findOne(patient_id: string) {
+async findOne(patient_id: string) {
+    if (!patient_id) {
+        throw new BadRequestException('O ID do paciente é obrigatório.');
+    }
+
     const appointmentsSnapshot = await firestoreDb
       .collection('appointments')
       .where('patient_id', '==', patient_id)
@@ -37,7 +41,8 @@ export class AppointmentsService {
     }))[0];
 
     return appointment;
-  }
+}
+
 
   async create(data: CreateAppointmentDto) {
     try {
