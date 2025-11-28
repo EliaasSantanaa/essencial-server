@@ -25,7 +25,7 @@ export class AppointmentsController {
     @ApiParam({ name: 'id', description: 'O agendamento do paciente será retornado' })
     @ApiResponse({ status: 200, description: 'Consulta retornada com sucesso.' })
     @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
-    async findOne(@Param('patient_id') patient_id: string) {
+    async findOne(@Param('id') patient_id: string) {  // Alterado para 'id'
         const appointment = await this.appointmentsService.findOne(patient_id);
         return appointment;
     }
